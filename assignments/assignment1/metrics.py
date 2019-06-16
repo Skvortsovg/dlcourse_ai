@@ -1,3 +1,4 @@
+import numpy as np
 def binary_classification_metrics(prediction, ground_truth):
     '''
     Computes metrics for binary classification
@@ -9,10 +10,24 @@ def binary_classification_metrics(prediction, ground_truth):
     Returns:
     precision, recall, f1, accuracy - classification metrics
     '''
-    precision = 0
-    recall = 0
-    accuracy = 0
-    f1 = 0
+    conf_matrix = np.zeros((2, 2))
+    for i in range(len(prediction)):
+        if prediction[i] and ground_truth[i]:
+            conf_matrix[0][0] += 1
+        elif not prediction[i] and not ground_truth[i]:
+            conf_matrix[1][1] += 1
+        elif not prediction[i] and ground_truth[i]:
+            conf_matrix[1][0] += 1
+        else:
+            conf_matrix[0][1] += 1
+
+    print('Confusion matrix = ', conf_matrix)
+
+    precision = conf_matrix[0][0] / (conf_matrix[0][0] + conf_matrix[0][1])
+    recall = conf_matrix[0][0] / (conf_matrix[0][0] + conf_matrix[1][0])
+    accuracy = (conf_matrix[0][0] + conf_matrix[1][1])/conf_matrix.sum()
+    f1 = 2 * precision * recall/ (precision + recall)
+
 
     # TODO: implement metrics!
     # Some helpful links:
