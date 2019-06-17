@@ -1,4 +1,5 @@
 import numpy as np
+# from collections import Counter
 
 
 class KNN:
@@ -54,7 +55,6 @@ class KNN:
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
             for i_train in range(num_train):
-                # TODO: Fill dists[i_test][i_train]
                 dists[i_test][i_train] = np.abs(self.train_X[i_train] - X[i_test]).sum()
         return dists
 
@@ -74,8 +74,6 @@ class KNN:
         num_test = X.shape[0]
         dists = np.zeros((num_test, num_train), np.float32)
         for i_test in range(num_test):
-            # TODO: Fill the whole row of dists[i_test]
-            # without additional loops or list comprehensions
             dists[i_test] = np.abs(X[i_test, :] - self.train_X).sum(axis=1)
         return dists
 
@@ -132,11 +130,12 @@ class KNN:
            for every test sample
         '''
         num_test = dists.shape[0]
-        num_test = dists.shape[0]
         pred = np.zeros(num_test, np.int)
         for i in range(num_test):
-            
-            # TODO: Implement choosing best class based on k
-            # nearest training samples
-            pass
+            k_nearest = np.argsort(dists[i])[: self.k]
+            k_nearest_labels = self.train_y[k_nearest]
+            pred[i] = Counter(k_nearest_labels).most_common(1)[0][0]
+            #labels, counts = np.unique(k_nearest_labels, return_counts=True)
+            #counter = dict(zip(labels, counts))
+            #pred[i] = max(counter, key=counter.get)
         return pred
