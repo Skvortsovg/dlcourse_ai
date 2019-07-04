@@ -141,6 +141,7 @@ class LinearSoftmaxClassifier():
         num_train = X.shape[0]
         num_features = X.shape[1]
         num_classes = np.max(y)+1
+        self.batch_size = batch_size
         if self.W is None:
             self.W = 0.001 * np.random.randn(num_features, num_classes)
 
@@ -148,17 +149,20 @@ class LinearSoftmaxClassifier():
         for epoch in range(epochs):
             shuffled_indices = np.arange(num_train)
             np.random.shuffle(shuffled_indices)
-            sections = np.arange(batch_size, num_train, batch_size)
+            sections = np.arange(self.batch_size, num_train, self.batch_size)
             batches_indices = np.array_split(shuffled_indices, sections)
 
-            # TODO implement generating batches from indices
-            # Compute loss and gradients
-            # Apply gradient to weights using learning rate
-            # Don't forget to add both cross-entropy loss
-            # and regularization!
-            raise Exception("Not implemented!")
-
-            # end
+            for batch_index in batches_indices:
+                
+                predictions = X[batch_index] @ self.W
+                loss, dprediction = softmax_with_cross_entropy(predictions, y[batch_index])
+                dW = X[batch_index].T @ dprediction
+                reg_loss = reg * np.sum(np.square(self.W))
+                grad = 2 * np.array(self.W) * reg
+                loss += reg_loss
+                dW += grad
+                self.W -= learning_rate*dW
+            loss_history.append(loss)
             print("Epoch %i, loss: %f" % (epoch, loss))
 
         return loss_history
@@ -169,18 +173,14 @@ class LinearSoftmaxClassifier():
        
         Arguments:
           X, np array (test_samples, num_features)
-
         Returns:
           y_pred, np.array of int (test_samples)
         '''
         y_pred = np.zeros(X.shape[0], dtype=np.int)
 
-        # TODO Implement class prediction
-        # Your final implementation shouldn't have any loops
-        raise Exception("Not implemented!")
-
+        predictions = X @ self.W
+        y_pred = np.argmax(predictions, axis = 1)
         return y_pred
-
 
 
                 
