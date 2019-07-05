@@ -16,9 +16,12 @@ class TwoLayerNet:
         hidden_layer_size, int - number of neurons in the hidden layer
         reg, float - L2 regularization strength
         """
+        
         self.reg = reg
-        # TODO Create necessary layers
-        raise Exception("Not implemented!")
+        self.fc1 = FullyConnectedLayer(n_input, hidden_layer_size)
+        self.act1 = ReLULayer()
+        self.fc2 = FullyConnectedLayer(hidden_layer_size, n_output)
+        self.act2 = ReLULayer()
 
     def compute_loss_and_gradients(self, X, y):
         """
@@ -29,20 +32,33 @@ class TwoLayerNet:
         X, np array (batch_size, input_features) - input data
         y, np array of int (batch_size) - classes
         """
-        # Before running forward and backward pass through the model,
-        # clear parameter gradients aggregated from the previous pass
-        # TODO Set parameter gradient to zeros
-        # Hint: using self.params() might be useful!
-        raise Exception("Not implemented!")
+        # Clear gradients
+        params = self.params()
+        for p in params:
+            params[p].grad = 0
         
-        # TODO Compute loss and fill param gradients
-        # by running forward and backward passes through the model
+        X = self.fc1.forward(X)
+        X = self.act1.forward(X)
         
-        # After that, implement l2 regularization on all params
-        # Hint: self.params() is useful again!
-        raise Exception("Not implemented!")
-
+        X = self.fc2.forward(X)
+        
+        loss, d_pred = softmax_with_cross_entropy(X, y)
+        
+        # X = self.act2.forward(X)
+        
+        # d_act2 = self.act2.backward(d_pred)
+        d_fc2 = self.fc2.backward(d_pred)
+        
+        d_act1 = self.act1.backward(d_fc2)
+        d_fc1 = self.fc1.backward(d_act1)
+        
+        for p in params:
+            regular_loss, regular_grad = l2_regularization(params[p].value, self.reg)
+            loss += regular_loss
+            params[p].grad += regular_grad
         return loss
+        
+        
 
     def predict(self, X):
         """
@@ -65,8 +81,10 @@ class TwoLayerNet:
     def params(self):
         result = {}
 
-        # TODO Implement aggregating all of the params
-
-        raise Exception("Not implemented!")
+        for param in self.fc1.params():
+            result[param + '_fc1'] = self.fc1.params()[param]
+            
+        for param in self.fc2.params():
+            result[param + '_fc2'] = self.fc2.params()[param]
 
         return result
