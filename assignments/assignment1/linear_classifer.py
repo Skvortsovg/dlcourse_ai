@@ -1,5 +1,7 @@
 import numpy as np
 import math
+from sklearn.base import BaseEstimator, ClassifierMixin
+from metrics import multiclass_accuracy
 
 def softmax(predictions):
     '''
@@ -120,33 +122,31 @@ def linear_softmax(X, W, target_index):
     return loss, dW
 
 
-class LinearSoftmaxClassifier():
-    def __init__(self):
+class LinearSoftmaxClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, batch_size=100, learning_rate=1e-7, reg=1e-5, epochs=1):
         self.W = None
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.reg = reg
+        self.epochs = epochs
 
-    def fit(self, X, y, batch_size=100, learning_rate=1e-7, reg=1e-5,
-            epochs=1):
+    def fit(self, X, y):
         '''
         Trains linear classifier
         
         Arguments:
           X, np array (num_samples, num_features) - training data
           y, np array of int (num_samples) - labels
-          batch_size, int - batch size to use
-          learning_rate, float - learning rate for gradient descent
-          reg, float - L2 regularization strength
-          epochs, int - number of epochs
         '''
 
         num_train = X.shape[0]
         num_features = X.shape[1]
         num_classes = np.max(y)+1
-        self.batch_size = batch_size
         if self.W is None:
             self.W = 0.001 * np.random.randn(num_features, num_classes)
 
         loss_history = []
-        for epoch in range(epochs):
+        for epoch in range(self.epochs):
             shuffled_indices = np.arange(num_train)
             np.random.shuffle(shuffled_indices)
             sections = np.arange(self.batch_size, num_train, self.batch_size)
@@ -157,13 +157,13 @@ class LinearSoftmaxClassifier():
                 predictions = X[batch_index] @ self.W
                 loss, dprediction = softmax_with_cross_entropy(predictions, y[batch_index])
                 dW = X[batch_index].T @ dprediction
-                reg_loss = reg * np.sum(np.square(self.W))
-                grad = 2 * np.array(self.W) * reg
+                reg_loss = self.reg * np.sum(np.square(self.W))
+                grad = 2 * np.array(self.W) * self.reg
                 loss += reg_loss
                 dW += grad
-                self.W -= learning_rate*dW
+                self.W -= self.learning_rate*dW
             loss_history.append(loss)
-            print("Epoch %i, loss: %f" % (epoch, loss))
+#             print("Epoch %i, loss: %f" % (epoch, loss))
 
         return loss_history
 
@@ -181,7 +181,9 @@ class LinearSoftmaxClassifier():
         predictions = X @ self.W
         y_pred = np.argmax(predictions, axis = 1)
         return y_pred
-
+    
+    def score(self, X, y):
+         return multiclass_accuracy(self.predict(X), y)
 
                 
                                                           
