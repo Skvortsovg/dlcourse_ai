@@ -63,19 +63,22 @@ class TwoLayerNet:
     def predict(self, X):
         """
         Produces classifier predictions on the set
-
+    
         Arguments:
           X, np array (test_samples, num_features)
 
         Returns:
           y_pred, np.array of int (test_samples)
         """
-        # TODO: Implement predict
-        # Hint: some of the code of the compute_loss_and_gradients
-        # can be reused
         pred = np.zeros(X.shape[0], np.int)
+        
+        X = self.fc1.forward(X)
+        X = self.act1.forward(X)
+        X = self.fc2.forward(X)
+        X = self.act2.forward(X)
+        
+        pred = np.argmax(X, axis=1)
 
-        raise Exception("Not implemented!")
         return pred
 
     def params(self):
